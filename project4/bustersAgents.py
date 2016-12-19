@@ -104,8 +104,31 @@ class GreedyBustersAgent(BustersAgent):
     pacmanPosition = gameState.getPacmanPosition()
     legal = [a for a in gameState.getLegalPacmanActions()]
     livingGhosts = gameState.getLivingGhosts()
-    livingGhostPositionDistributions = [beliefs for i,beliefs
+    livingGhostPositionDistributions = [beliefs for i, beliefs
                                         in enumerate(self.ghostBeliefs)
                                         if livingGhosts[i+1]]
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    targetGhostPosition = pacmanPosition
+    numLivingGhosts = len(livingGhostPositionDistributions)
+
+
+    if numLivingGhosts == 1:
+      targetGhostPosition = livingGhostPositionDistributions[0].argMax()
+    else:
+      minDis = 9999
+      for i in range(0, numLivingGhosts):
+        p = livingGhostPositionDistributions[i].argMax()
+        if minDis > self.distancer.getDistance(p, pacmanPosition):
+          targetGhostPosition = p
+          minDis = self.distancer.getDistance(p, pacmanPosition)
+
+    minDis = 9999
+    useAct = legal[0]
+    for a in legal:
+      successorPosition = Actions.getSuccessor(pacmanPosition, a)
+      dis = self.distancer.getDistance(successorPosition, targetGhostPosition);
+      if minDis > dis:
+        useAct = a
+        minDis = dis
+
+    return useAct
